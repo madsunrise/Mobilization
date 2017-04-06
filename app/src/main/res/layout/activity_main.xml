@@ -12,11 +12,10 @@
         android:layout_height="150dp"
         android:hint="@string/enter_text_to_translate" />
 
-    <Button
-        android:id="@+id/translate_btn"
+    <TextView
+        android:id="@+id/translated_text"
+        android:textSize="18sp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:text="@string/translate" />
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

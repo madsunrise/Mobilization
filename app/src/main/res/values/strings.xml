@@ -3,4 +3,6 @@
     <string name="enter_text_to_translate">Введите текст для перевода</string>
     <string name="translate">Перевести</string>
     <string name="loading">Загрузка&#8230;</string>
+    <string name="network_error_occured">Произошла сетевая ошибка!</string>
+    <string name="internal_error_occured">Произошла внутренняя ошибка</string>
 </resources>
