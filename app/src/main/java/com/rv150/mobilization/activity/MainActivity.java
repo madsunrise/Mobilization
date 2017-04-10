@@ -1,30 +1,23 @@
 package com.rv150.mobilization.activity;
 
-import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.rv150.mobilization.R;
-import com.rv150.mobilization.network.ApiHelper;
+import com.rv150.mobilization.network.TranslatorService;
 import com.rv150.mobilization.utils.UiThread;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import static com.rv150.mobilization.network.TranslatorService.ERR_NETWORK;
 
-import static com.rv150.mobilization.network.ApiHelper.ERR_NETWORK;
+public class MainActivity extends AppCompatActivity implements TranslatorService.ApiCallback {
 
-public class MainActivity extends AppCompatActivity implements ApiHelper.ApiCallback {
-
-    private final ApiHelper apiHelper = ApiHelper.getInstance();
+    private final TranslatorService translatorService = TranslatorService.getInstance();
 
     private EditText userInput;
     private TextView translatedText;
@@ -50,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements ApiHelper.ApiCall
             @Override
             public void afterTextChanged(Editable s) {
                 if (s.length() > 0) {
-                    apiHelper.requestTranslate(s.toString());
+                    translatorService.requestTranslate(s.toString());
                 }
                 else {
                     translatedText.setText("");
@@ -60,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements ApiHelper.ApiCall
 
         translatedText = (TextView) findViewById(R.id.translated_text);
 
-        apiHelper.setCallback(this);
+        translatorService.setCallback(this);
     }
 
 
@@ -92,15 +85,11 @@ public class MainActivity extends AppCompatActivity implements ApiHelper.ApiCall
         });
     }
 
-    public void setCall(View view) {
-        apiHelper.setCallback(null);
-    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        apiHelper.setCallback(null);
-        Log.d(TAG, "Activity destroyes");
+        translatorService.setCallback(null);
     }
 
     private final static String TAG = MainActivity.class.getSimpleName();
