@@ -5,13 +5,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.rv150.mobilization.R;
 import com.rv150.mobilization.network.TranslatorService;
 import com.rv150.mobilization.utils.UiThread;
+
+import java.util.List;
 
 import static com.rv150.mobilization.network.TranslatorService.ERR_NETWORK;
 
@@ -22,11 +26,16 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
     private EditText userInput;
     private TextView translatedText;
 
+    private Spinner spinnerFrom;
+    private Spinner spinnerTo;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        translatorService.setCallback(this);
 
         userInput = (EditText) findViewById(R.id.input_text);
         userInput.addTextChangedListener(new TextWatcher() {
@@ -53,7 +62,12 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
 
         translatedText = (TextView) findViewById(R.id.translated_text);
 
-        translatorService.setCallback(this);
+
+
+        spinnerFrom = (Spinner) findViewById(R.id.lang_from);
+        spinnerTo = (Spinner) findViewById(R.id.lang_to);
+
+        translatorService.getSupportedLanguages("ru");
     }
 
 
@@ -66,6 +80,24 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
                 translatedText.setText(data);
             }
         });
+    }
+
+    @Override
+    public void supLanguagesLoaded(final List<String> langs) {
+        UiThread.run(new Runnable() {
+            @Override
+            public void run() {
+                ArrayAdapter<String> adapterFrom = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, langs);
+                adapterFrom.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerFrom.setAdapter(adapterFrom);
+
+
+                ArrayAdapter<String> adapterTo = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, langs);
+                adapterTo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerTo.setAdapter(adapterTo);
+            }
+        });
+
     }
 
     @Override

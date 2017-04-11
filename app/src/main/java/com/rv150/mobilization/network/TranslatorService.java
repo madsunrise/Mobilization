@@ -2,10 +2,15 @@ package com.rv150.mobilization.network;
 
 import android.util.Log;
 
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,6 +46,7 @@ public class TranslatorService {
     public interface ApiCallback {
         void onDataLoaded(String result);
         void dataLoadingFailed(int errCode);
+        void supLanguagesLoaded(List<String> langs);
     }
 
     public void setCallback(ApiCallback callback) {
@@ -67,7 +73,7 @@ public class TranslatorService {
             call.cancel();                          // Отменяем предыдущий выполняющийся запрос
         }
 
-        call = gitHubService.getTranslate(API_KEY, query, "en-ru");
+        call = gitHubService.getTranslate(API_KEY, "en-ru", query);
 
         call.enqueue(new Callback<TranslateResponse>() {
             @Override
@@ -96,6 +102,31 @@ public class TranslatorService {
                         callback.dataLoadingFailed(ERR_NETWORK);
                     }
                 }
+            }
+        });
+    }
+
+    public void getSupportedLanguages(final String ui) {
+        Call<SupportedLanguages> call = gitHubService.getSupLangs(API_KEY, ui);
+        call.enqueue(new Callback<SupportedLanguages>() {
+            @Override
+            public void onResponse(Call<SupportedLanguages> call, Response<SupportedLanguages> response) {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "Supported languages loaded");
+                    Map<String, String> map = response.body().getLangs();
+
+                    List<String> languages = new ArrayList<>(map.values());
+                    Collections.sort(languages);
+                    callback.supLanguagesLoaded(languages);
+                }
+                else {
+                    Log.e(TAG, "Getting supported languages failed!");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<SupportedLanguages> call, Throwable t) {
+
             }
         });
     }

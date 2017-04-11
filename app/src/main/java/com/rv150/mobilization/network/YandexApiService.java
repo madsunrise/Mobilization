@@ -1,10 +1,14 @@
 package com.rv150.mobilization.network;
 
 import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 /**
@@ -13,14 +17,24 @@ import retrofit2.http.Query;
 
 interface YandexApiService {
 
-    @GET("/api/v1.5/tr.json/translate")
+    @FormUrlEncoded
+    @POST("/api/v1.5/tr.json/translate")
     Call<TranslateResponse> getTranslate(
             @Query("key") String key,
-            @Query("text") String text,
-            @Query("lang") String lang);
+            @Query("lang") String lang,
+            @Field("text") String first);
 
 
-    OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
+    @GET("/api/v1.5/tr.json/getLangs")
+    Call<SupportedLanguages> getSupLangs(
+            @Query("key") String key,
+            @Query("ui") String ui);
+
+
+
+
+    HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY);
+    OkHttpClient okHttpClient = new OkHttpClient.Builder().addInterceptor(httpLoggingInterceptor).build();
 
     Retrofit retrofit = new Retrofit.Builder()
             .baseUrl("https://translate.yandex.net")
