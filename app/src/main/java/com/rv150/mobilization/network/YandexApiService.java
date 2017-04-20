@@ -1,6 +1,7 @@
 package com.rv150.mobilization.network;
 
 import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -19,11 +20,10 @@ interface YandexApiService {
             @Query("text") String text,
             @Query("lang") String lang);
 
-
     OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
 
     Retrofit retrofit = new Retrofit.Builder()
             .baseUrl("https://translate.yandex.net")
             .addConverterFactory(GsonConverterFactory.create()).client(okHttpClient)
             .build();
-    }
+}

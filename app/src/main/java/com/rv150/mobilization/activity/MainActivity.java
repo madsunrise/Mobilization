@@ -1,6 +1,7 @@
 package com.rv150.mobilization.activity;
 
 import android.os.Bundle;
+import android.support.annotation.WorkerThread;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -32,18 +33,16 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
         userInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
             }
 
             @Override
             public void afterTextChanged(Editable s) {
                 if (s.length() > 0) {
-                    translatorService.requestTranslate(s.toString());
+                    translatorService.requestTranslate();
                 }
                 else {
                     translatedText.setText("");
@@ -52,37 +51,33 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
         });
 
         translatedText = (TextView) findViewById(R.id.translated_text);
-
         translatorService.setCallback(this);
     }
 
 
 
     @Override
-    public void onDataLoaded(final String data) {
-        UiThread.run(new Runnable() {
-            @Override
-            public void run() {
-                translatedText.setText(data);
-            }
-        });
+    public void onDataLoaded(String data, boolean nextRequest) {
+        if (data != null) {
+            translatedText.setText(data);
+        }
     }
 
     @Override
-    public void dataLoadingFailed(final int errCode) {
-        UiThread.run(new Runnable() {
-            @Override
-            public void run() {
-                switch (errCode) {
-                    case ERR_NETWORK: {
-                        Toast.makeText(MainActivity.this, R.string.network_error_occured, Toast.LENGTH_SHORT).show();
-                    }
-                    default: {
-                        Toast.makeText(MainActivity.this, R.string.internal_error_occured, Toast.LENGTH_SHORT).show();
-                    }
-                }
+    public String getFreshData() {
+        return userInput.getText().toString();
+    }
+
+    @Override
+    public void dataLoadingFailed(int errCode) {
+        switch (errCode) {
+            case ERR_NETWORK: {
+                Toast.makeText(MainActivity.this, R.string.network_error_occured, Toast.LENGTH_SHORT).show();
             }
-        });
+            default: {
+                Toast.makeText(MainActivity.this, R.string.internal_error_occured, Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
 
