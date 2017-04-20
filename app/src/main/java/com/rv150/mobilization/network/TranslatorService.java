@@ -5,7 +5,11 @@ import android.util.Log;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.rv150.mobilization.utils.UiThread;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -21,12 +25,15 @@ import retrofit2.Response;
 public class TranslatorService {
     private static final TranslatorService instance = new TranslatorService();
 
+    private TranslatorService() {}
+
     private final YandexApiService gitHubService = YandexApiService.retrofit.create(YandexApiService.class);
 
-    private Call<TranslateResponse> call = null;
 
     private static final String API_KEY = "trnsl.1.1.20170330T065607Z.dc9520b57e28c5f3.d470142e2a9021eb88919a66af16cf82457f17f0";
 
+
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
 
     private ApiCallback callback;
@@ -50,51 +57,58 @@ public class TranslatorService {
     }
 
 
-    private LoadingCache<String, String> cache = CacheBuilder.newBuilder()
+    private final LoadingCache<String, String> cache = CacheBuilder.newBuilder()
             .maximumSize(100)
             .build(new CacheLoader<String, String>() {
                 @Override
                 public String load(String key) throws Exception {
-                    return "";
+                    Call<TranslateResponse> call = gitHubService.getTranslate(API_KEY, key, "en-ru");
+                    Response<TranslateResponse> response = call.execute();
+                    if (!response.isSuccessful()) {
+                        return null;
+                    }
+                    TranslateResponse result = response.body();
+                    if (!result.getText().isEmpty()) {
+                        return result.getText().get(0);
+                    }
+                    else {
+                        return null;
+                    }
                 }
             });
 
 
 
+    private void handleResult(String result) {
+        if (callback != null) {
+            callback.onDataLoaded(result);
+        }
+    }
+
 
     public void requestTranslate(final String query) {
-        if (call != null && !call.isExecuted()) {
-            call.cancel();                          // Отменяем предыдущий выполняющийся запрос
+
+        String result = cache.getIfPresent(query);
+        if (result != null) {
+            callback.onDataLoaded(result);  // Cache hit
+            return;
         }
 
-        call = gitHubService.getTranslate(API_KEY, query, "en-ru");
-
-        call.enqueue(new Callback<TranslateResponse>() {
+        executor.execute(new Runnable() {
             @Override
-            public void onResponse(Call<TranslateResponse> call, Response<TranslateResponse> response) {
-                synchronized (ApiCallback.class) {
-                    if (callback == null) {
-                        return;
+            public void run() {
+                try {
+                    final String result = cache.get(query);
+                    if (result != null) {
+                        UiThread.run(new Runnable() {
+                            @Override
+                            public void run() {
+                                handleResult(result);
+                            }
+                        });
                     }
-                    if (response.isSuccessful()) {
-                        TranslateResponse result = response.body();
-                        if (!result.getText().isEmpty()) {
-                            callback.onDataLoaded(result.getText().get(0));
-                        }
-                        else {
-                            callback.dataLoadingFailed(UNKNOWN_ERROR);
-                        }
-                    } else {
-                        callback.dataLoadingFailed(UNKNOWN_ERROR);
-                    }
-                }
-            }
-            @Override
-            public void onFailure(Call<TranslateResponse> call, Throwable t) {
-                synchronized (ApiCallback.class) {
-                    if (callback != null) {
-                        callback.dataLoadingFailed(ERR_NETWORK);
-                    }
+                } catch (ExecutionException ex) {
+                    Log.e(TAG, "Failed to load translate: " + ex.getMessage());
                 }
             }
         });
