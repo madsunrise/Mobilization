@@ -6,8 +6,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,6 +32,9 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
 
     private Spinner spinnerFrom;
     private Spinner spinnerTo;
+
+    private LinearLayout container;
+    private ProgressBar progressBar;
 
 
     @Override
@@ -64,8 +70,13 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
         spinnerFrom = (Spinner) findViewById(R.id.lang_from);
         spinnerTo = (Spinner) findViewById(R.id.lang_to);
 
-        translatorService.getSupportedLanguages("ru");
+        translatorService.getSupportedLanguages(getString(R.string.ui_lang));
         translatorService.setCallback(this);
+
+        container = (LinearLayout) findViewById(R.id.container);
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        container.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
     }
 
 
@@ -79,20 +90,16 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
 
     @Override
     public void supLanguagesLoaded(final List<String> langs) {
-        UiThread.run(new Runnable() {
-            @Override
-            public void run() {
-                ArrayAdapter<String> adapterFrom = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, langs);
-                adapterFrom.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                spinnerFrom.setAdapter(adapterFrom);
+        ArrayAdapter<String> adapterFrom = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, langs);
+        adapterFrom.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerFrom.setAdapter(adapterFrom);
 
+        ArrayAdapter<String> adapterTo = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, langs);
+        adapterTo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTo.setAdapter(adapterTo);
 
-                ArrayAdapter<String> adapterTo = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, langs);
-                adapterTo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                spinnerTo.setAdapter(adapterTo);
-            }
-        });
-
+        container.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -112,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
         });
     }
 
-    
+
     public String getFreshData() {
         return userInput.getText().toString();
     }

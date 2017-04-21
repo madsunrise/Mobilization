@@ -154,7 +154,9 @@ public class TranslatorService {
 
                     List<String> languages = new ArrayList<>(map.values());
                     Collections.sort(languages);
-                    callback.supLanguagesLoaded(languages);
+                    if (callback != null) {
+                        callback.supLanguagesLoaded(languages);
+                    }
                 }
                 else {
                     Log.e(TAG, "Getting supported languages failed!");
