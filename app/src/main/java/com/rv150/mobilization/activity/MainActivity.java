@@ -1,6 +1,7 @@
 package com.rv150.mobilization.activity;
 
 import android.os.Bundle;
+import android.support.annotation.WorkerThread;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -41,18 +42,16 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
         userInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
             }
 
             @Override
             public void afterTextChanged(Editable s) {
                 if (s.length() > 0) {
-                    translatorService.requestTranslate(s.toString());
+                    translatorService.requestTranslate();
                 }
                 else {
                     translatedText.setText("");
@@ -62,24 +61,20 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
 
         translatedText = (TextView) findViewById(R.id.translated_text);
 
-
-
         spinnerFrom = (Spinner) findViewById(R.id.lang_from);
         spinnerTo = (Spinner) findViewById(R.id.lang_to);
 
         translatorService.getSupportedLanguages("ru");
+        translatorService.setCallback(this);
     }
 
 
 
     @Override
-    public void onDataLoaded(final String data) {
-        UiThread.run(new Runnable() {
-            @Override
-            public void run() {
-                translatedText.setText(data);
-            }
-        });
+    public void onDataLoaded(String data, boolean nextRequest) {
+        if (data != null) {
+            translatedText.setText(data);
+        }
     }
 
     @Override
@@ -116,6 +111,12 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
             }
         });
     }
+
+    
+    public String getFreshData() {
+        return userInput.getText().toString();
+    }
+
 
 
     @Override

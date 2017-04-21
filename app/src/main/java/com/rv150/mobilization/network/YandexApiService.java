@@ -32,12 +32,11 @@ interface YandexApiService {
 
 
 
+    OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
 
-    HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY);
-    OkHttpClient okHttpClient = new OkHttpClient.Builder().addInterceptor(httpLoggingInterceptor).build();
 
     Retrofit retrofit = new Retrofit.Builder()
             .baseUrl("https://translate.yandex.net")
             .addConverterFactory(GsonConverterFactory.create()).client(okHttpClient)
             .build();
-    }
+}
