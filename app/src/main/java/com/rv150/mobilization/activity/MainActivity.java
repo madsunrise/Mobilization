@@ -27,20 +27,29 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 import static com.rv150.mobilization.network.TranslatorService.ERR_NETWORK;
 
 public class MainActivity extends AppCompatActivity implements TranslatorService.TranslateCallback {
 
     private final TranslatorService translatorService = TranslatorService.getInstance();
 
-    private EditText userInput;
-    private TextView translatedText;
+    @BindView(R.id.input_text)
+    EditText userInput;
+    @BindView(R.id.translated_text)
+    TextView translatedText;
 
-    private Spinner spinnerFrom;
-    private Spinner spinnerTo;
+    @BindView(R.id.spinner_from)
+    Spinner spinnerFrom;
+    @BindView(R.id.spinner_to)
+    Spinner spinnerTo;
 
-    private LinearLayout container;
-    private ProgressBar progressBar;
+    @BindView(R.id.container)
+    LinearLayout container;
+    @BindView(R.id.progress_bar)
+    ProgressBar progressBar;
 
     private BiMap<String, String> languages;
 
@@ -49,10 +58,10 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
 
         translatorService.setCallback(this);
 
-        userInput = (EditText) findViewById(R.id.input_text);
         userInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -73,18 +82,11 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
             }
         });
 
-        translatedText = (TextView) findViewById(R.id.translated_text);
-
-        spinnerFrom = (Spinner) findViewById(R.id.lang_from);
-        spinnerTo = (Spinner) findViewById(R.id.lang_to);
 
         translatorService.getSupportedLanguages(getString(R.string.ui_lang));
         translatorService.setCallback(this);
 
-        container = (LinearLayout) findViewById(R.id.container);
-        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        container.setVisibility(View.GONE);
-        progressBar.setVisibility(View.VISIBLE);
+        showProgressBar();
     }
 
 
@@ -98,6 +100,8 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
 
     @Override
     public void supLanguagesLoaded(Map<String, String> langs) {
+        hideProgressBar();
+
         languages = HashBiMap.create(langs);
 
         List<String> langList = new ArrayList<>(languages.values());
@@ -110,9 +114,6 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
         ArrayAdapter<String> adapterTo = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, langList);
         adapterTo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTo.setAdapter(adapterTo);
-
-        container.setVisibility(View.VISIBLE);
-        progressBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -148,6 +149,15 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
     protected void onDestroy() {
         super.onDestroy();
         translatorService.setCallback(null);
+    }
+
+    private void showProgressBar() {
+        progressBar.setVisibility(View.VISIBLE);
+        container.setVisibility(View.GONE);
+    }
+    private void hideProgressBar() {
+        progressBar.setVisibility(View.GONE);
+        container.setVisibility(View.VISIBLE);
     }
 
     private final static String TAG = MainActivity.class.getSimpleName();
