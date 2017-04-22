@@ -2,16 +2,25 @@ package com.rv150.mobilization.network;
 
 import android.util.Log;
 
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.rv150.mobilization.model.TranslateRequest;
 import com.rv150.mobilization.utils.UiThread;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -28,7 +37,7 @@ public class TranslatorService {
 
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private ApiCallback callback;
+    private TranslateCallback callback;
 
     public static final int ERR_NETWORK = 0;
     public static final int UNKNOWN_ERROR = 1;
@@ -40,23 +49,27 @@ public class TranslatorService {
     private boolean active = false;
     private boolean dirty = false;
 
-    public interface ApiCallback {
+    public interface TranslateCallback {
         void onDataLoaded(String result, boolean nextRequest);
-        String getFreshData();
+        TranslateRequest getFreshData();
         void dataLoadingFailed(int errCode);
+        void supLanguagesLoaded(Map<String, String> langs);
     }
 
-    public void setCallback(ApiCallback callback) {
+    public void setCallback(TranslateCallback callback) {
         this.callback = callback;
     }
 
 
-    private final LoadingCache<String, String> cache = CacheBuilder.newBuilder()
+    private final LoadingCache<TranslateRequest, String> cache = CacheBuilder.newBuilder()
             .maximumSize(100)
-            .build(new CacheLoader<String, String>() {
+            .build(new CacheLoader<TranslateRequest, String>() {
                 @Override
-                public String load(String key) throws Exception {
-                    Call<TranslateResponse> call = api.getTranslate(API_KEY, key, "en-ru");
+                public String load(TranslateRequest key) throws Exception {
+                    String from = key.getFrom();
+                    String to = key.getTo();
+                    String text = key.getText();
+                    Call<TranslateResponse> call = api.getTranslate(API_KEY, from + '-' + to, text);
                     Response<TranslateResponse> response = call.execute();
                     if (!response.isSuccessful()) {
                         return null;
@@ -75,17 +88,17 @@ public class TranslatorService {
 
 
     public void requestTranslate() {
-        final String input = callback.getFreshData();
-        String result = cache.getIfPresent(input);
+        final TranslateRequest request = callback.getFreshData();
+        String result = cache.getIfPresent(request);
         if (result != null) {
             Log.d(TAG, "Getting value from cache!");
             callback.onDataLoaded(result, false);
             return;
         }
-        makeNetworkRequest(input);
+        makeNetworkRequest(request);
     }
 
-    private synchronized void makeNetworkRequest(String input) {
+    private synchronized void makeNetworkRequest(TranslateRequest input) {
         if (active) {
             dirty = true;
             return;
@@ -95,7 +108,7 @@ public class TranslatorService {
     }
 
 
-    private void runAsyncTask(final String input) {
+    private void runAsyncTask(final TranslateRequest input) {
         Log.d(TAG, "Running async task...");
         executor.execute(new Runnable() {
             @Override
@@ -103,7 +116,8 @@ public class TranslatorService {
                 try {
                     final String result = cache.get(input);
                     onRequestFinished(result);
-                } catch (ExecutionException ex) {
+                } catch (Exception ex) {
+                    //TODO Cache returns null
                     Log.e(TAG, "Failed to load translate: " + ex.getMessage());
                 }
             }
@@ -132,6 +146,30 @@ public class TranslatorService {
                         runAsyncTask(callback.getFreshData());
                     }
                 }
+            }
+        });
+    }
+
+    public void getSupportedLanguages(final String ui) {
+        Call<SupportedLanguages> call = api.getSupLangs(API_KEY, ui);
+        call.enqueue(new Callback<SupportedLanguages>() {
+            @Override
+            public void onResponse(Call<SupportedLanguages> call, Response<SupportedLanguages> response) {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "Supported languages loaded");
+                    Map<String, String> map = response.body().getLangs();
+                    if (callback != null) {
+                        callback.supLanguagesLoaded(map);
+                    }
+                }
+                else {
+                    Log.e(TAG, "Getting supported languages failed!");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<SupportedLanguages> call, Throwable t) {
+                Log.e(TAG, "Getting supported languages failed!");
             }
         });
     }
