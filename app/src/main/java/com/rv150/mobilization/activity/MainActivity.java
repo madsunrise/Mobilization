@@ -15,15 +15,21 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.rv150.mobilization.R;
+import com.rv150.mobilization.model.TranslateRequest;
 import com.rv150.mobilization.network.TranslatorService;
 import com.rv150.mobilization.utils.UiThread;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static com.rv150.mobilization.network.TranslatorService.ERR_NETWORK;
 
-public class MainActivity extends AppCompatActivity implements TranslatorService.ApiCallback {
+public class MainActivity extends AppCompatActivity implements TranslatorService.TranslateCallback {
 
     private final TranslatorService translatorService = TranslatorService.getInstance();
 
@@ -35,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
 
     private LinearLayout container;
     private ProgressBar progressBar;
+
+    private BiMap<String, String> languages;
 
 
     @Override
@@ -89,12 +97,17 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
     }
 
     @Override
-    public void supLanguagesLoaded(final List<String> langs) {
-        ArrayAdapter<String> adapterFrom = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, langs);
+    public void supLanguagesLoaded(Map<String, String> langs) {
+        languages = HashBiMap.create(langs);
+
+        List<String> langList = new ArrayList<>(languages.values());
+        Collections.sort(langList);
+
+        ArrayAdapter<String> adapterFrom = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, langList);
         adapterFrom.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerFrom.setAdapter(adapterFrom);
 
-        ArrayAdapter<String> adapterTo = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, langs);
+        ArrayAdapter<String> adapterTo = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, langList);
         adapterTo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTo.setAdapter(adapterTo);
 
@@ -120,8 +133,13 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
     }
 
 
-    public String getFreshData() {
-        return userInput.getText().toString();
+    public TranslateRequest getFreshData() {
+        String from = spinnerFrom.getSelectedItem().toString();
+        String fromCode = languages.inverse().get(from);
+        String to = spinnerTo.getSelectedItem().toString();
+        String toCode = languages.inverse().get(to);
+        String text = userInput.getText().toString();
+        return new TranslateRequest(fromCode, toCode, text);
     }
 
 

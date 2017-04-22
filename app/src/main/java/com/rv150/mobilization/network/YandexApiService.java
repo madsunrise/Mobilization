@@ -22,7 +22,7 @@ interface YandexApiService {
     Call<TranslateResponse> getTranslate(
             @Query("key") String key,
             @Query("lang") String lang,
-            @Field("text") String first);
+            @Field("text") String text);
 
 
     @GET("/api/v1.5/tr.json/getLangs")
