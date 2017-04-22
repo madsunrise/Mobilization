@@ -8,6 +8,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -29,6 +30,7 @@ import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 import static com.rv150.mobilization.network.TranslatorService.ERR_NETWORK;
 
@@ -110,11 +112,25 @@ public class MainActivity extends AppCompatActivity implements TranslatorService
         ArrayAdapter<String> adapterFrom = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, langList);
         adapterFrom.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerFrom.setAdapter(adapterFrom);
+        spinnerFrom.setSelection(adapterFrom.getPosition("Английский"));
 
         ArrayAdapter<String> adapterTo = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, langList);
         adapterTo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTo.setAdapter(adapterTo);
+        spinnerTo.setSelection(adapterTo.getPosition("Русский"));
     }
+
+
+    @OnClick(R.id.reverse_button)
+    public void reverseLangs() {
+        int from = spinnerFrom.getSelectedItemPosition();
+        int to = spinnerTo.getSelectedItemPosition();
+        spinnerFrom.setSelection(to);
+        spinnerTo.setSelection(from);
+        translatorService.requestTranslate();
+    }
+
+
 
     @Override
     public void dataLoadingFailed(final int errCode) {

@@ -109,7 +109,7 @@ public class TranslatorService {
 
 
     private void runAsyncTask(final TranslateRequest input) {
-        Log.d(TAG, "Running async task...");
+        Log.d(TAG, "Running async request...");
         executor.execute(new Runnable() {
             @Override
             public void run() {
