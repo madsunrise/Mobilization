@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/my_action1"
+        android:enabled="true"
+        android:title="item1"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/my_action2"
+        android:enabled="true"
+        android:title="item2"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/my_action3"
+        android:enabled="true"
+        android:title="item3"
+        app:showAsAction="ifRoom" />
+</menu>
