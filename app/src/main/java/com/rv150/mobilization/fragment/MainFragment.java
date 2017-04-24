@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -42,7 +42,6 @@ import static com.rv150.mobilization.network.TranslatorService.ERR_NETWORK;
  */
 
 public class MainFragment extends Fragment implements TranslatorService.TranslateCallback {
-    private static final String TAG = MainFragment.class.getSimpleName();
     private final TranslatorService translatorService = TranslatorService.getInstance();
 
     @BindView(R.id.input_text)
@@ -63,8 +62,8 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
     Button favoritesButton;
 
     private TranslationDAO translationDAO;
-
     private BiMap<String, String> availableLanguages = null;
+    private long lastDataReceiving;
 
 
     @Override
@@ -99,12 +98,21 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
         if (data != null) {
             translatedText.setText(data.getTo());
             favoritesButton.setVisibility(View.VISIBLE);
-            Executors.newSingleThreadExecutor().execute(new Runnable() {
+            lastDataReceiving = System.currentTimeMillis();
+            new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    translationDAO.insertTranslation(data);
+                    try {
+                        Thread.sleep(1000);
+                    }
+                    catch (InterruptedException ex) {
+                        Log.d(getClass().getSimpleName(), "Thread sleep error!");
+                    }
+                    if (System.currentTimeMillis() - lastDataReceiving >= 1000) { // Cохраняем в историю только те результаты,
+                        translationDAO.insertTranslation(data);                   // которые отображались более секунды
+                    }
                 }
-            });
+            }).start();
         }
     }
 
@@ -218,6 +226,4 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
             }
         }
     };
-
-
 }
