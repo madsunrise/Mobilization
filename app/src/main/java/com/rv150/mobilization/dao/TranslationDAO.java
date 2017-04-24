@@ -9,6 +9,7 @@ import com.rv150.mobilization.model.Translation;
 import com.rv150.mobilization.utils.DBHelper;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -34,8 +35,23 @@ public class TranslationDAO {
 
     public List<Translation> getAll() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String query = "SELECT * FROM " + DBHelper.Translation.TABLE_NAME;
+        String query = "SELECT * FROM " + DBHelper.Translation.TABLE_NAME +
+                " ORDER BY " + DBHelper.Translation.COLUMN_NAME_DATE_CREATED + " DESC";
         Cursor cursor = db.rawQuery(query, null);
+        List<Translation> result = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            result.add(mapTranslation(cursor));
+        }
+        cursor.close();
+        return result;
+    }
+
+    public List<Translation> getFavorites() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String query = "SELECT * FROM " + DBHelper.Translation.TABLE_NAME +
+                " WHERE " + DBHelper.Translation.COLUMN_NAME_FAVORITE + " = ? " +
+                "ORDER BY " + DBHelper.Translation.COLUMN_NAME_DATE_CREATED + " DESC";
+        Cursor cursor = db.rawQuery(query, new String[] {String.valueOf(1)});
         List<Translation> result = new ArrayList<>();
         while (cursor.moveToNext()) {
             result.add(mapTranslation(cursor));
@@ -75,6 +91,7 @@ public class TranslationDAO {
         values.put(DBHelper.Translation.COLUMN_NAME_FROM, translation.getFrom());
         int favorite = translation.isFavorite() ? 1 : 0;
         values.put(DBHelper.Translation.COLUMN_NAME_FAVORITE, favorite);
+        values.put(DBHelper.Translation.COLUMN_NAME_DATE_CREATED, Calendar.getInstance().getTimeInMillis());
 
         return db.insert(DBHelper.Translation.TABLE_NAME, null, values);
     }

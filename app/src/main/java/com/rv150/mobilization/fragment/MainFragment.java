@@ -41,8 +41,8 @@ import static com.rv150.mobilization.network.TranslatorService.ERR_NETWORK;
  * Created by ivan on 24.04.17.
  */
 
-public class TranslationFragment extends Fragment implements TranslatorService.TranslateCallback {
-    private static final String TAG = TranslationFragment.class.getSimpleName();
+public class MainFragment extends Fragment implements TranslatorService.TranslateCallback {
+    private static final String TAG = MainFragment.class.getSimpleName();
     private final TranslatorService translatorService = TranslatorService.getInstance();
 
     @BindView(R.id.input_text)
@@ -55,13 +55,23 @@ public class TranslationFragment extends Fragment implements TranslatorService.T
     @BindView(R.id.spinner_to)
     Spinner spinnerTo;
 
+    private ArrayAdapter<String> adapterFrom;
+    private ArrayAdapter<String> adapterTo;
+
     @BindView(R.id.container)
     LinearLayout container;
     @BindView(R.id.progress_bar)
     ProgressBar progressBar;
 
-    private BiMap<String, String> languages;
 
+    private BiMap<String, String> availableLanguages = null;
+    private boolean supLangsLoaded;
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
     @Nullable
     @Override
@@ -69,31 +79,18 @@ public class TranslationFragment extends Fragment implements TranslatorService.T
         View view = inflater.inflate(R.layout.translation_fragment, container, false);
         ButterKnife.bind(this, view);
 
-        userInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+        if (savedInstanceState == null) {
+            userInput.addTextChangedListener(watcher);
+        }
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (s.length() > 0) {
-                    translatorService.requestTranslate();
-                }
-                else {
-                    translatedText.setText("");
-                }
-            }
-        });
-
-
-        translatorService.getSupportedLanguages(getString(R.string.ui_lang));
         translatorService.setCallback(this);
-
-        showProgressBar();
+        if (availableLanguages == null) {
+            translatorService.requestSupportedLanguages(getString(R.string.ui_lang));
+            showProgressBar();
+        }
+        else {
+            updateSpinners();
+        }
         return view;
     }
 
@@ -113,22 +110,10 @@ public class TranslationFragment extends Fragment implements TranslatorService.T
 
     @Override
     public void supLanguagesLoaded(Map<String, String> langs) {
+        supLangsLoaded = true;
         hideProgressBar();
-
-        languages = HashBiMap.create(langs);
-
-        List<String> langList = new ArrayList<>(languages.values());
-        Collections.sort(langList);
-
-        ArrayAdapter<String> adapterFrom = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, langList);
-        adapterFrom.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerFrom.setAdapter(adapterFrom);
-        spinnerFrom.setSelection(adapterFrom.getPosition("Английский"));
-
-        ArrayAdapter<String> adapterTo = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, langList);
-        adapterTo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerTo.setAdapter(adapterTo);
-        spinnerTo.setSelection(adapterTo.getPosition("Русский"));
+        availableLanguages = HashBiMap.create(langs);
+        updateSpinners();
     }
 
 
@@ -163,14 +148,28 @@ public class TranslationFragment extends Fragment implements TranslatorService.T
 
     public TranslateRequest getFreshData() {
         String from = spinnerFrom.getSelectedItem().toString();
-        String fromCode = languages.inverse().get(from);
+        String fromCode = availableLanguages.inverse().get(from);
         String to = spinnerTo.getSelectedItem().toString();
-        String toCode = languages.inverse().get(to);
+        String toCode = availableLanguages.inverse().get(to);
         String text = userInput.getText().toString();
         return new TranslateRequest(fromCode, toCode, text);
     }
 
 
+    private void updateSpinners() {
+        List<String> langList = new ArrayList<>(availableLanguages.values());
+        Collections.sort(langList);
+
+        adapterFrom = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, langList);
+        adapterFrom.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerFrom.setAdapter(adapterFrom);
+        spinnerFrom.setSelection(adapterFrom.getPosition("Английский"));
+
+        adapterTo = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, langList);
+        adapterTo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTo.setAdapter(adapterTo);
+        spinnerTo.setSelection(adapterTo.getPosition("Русский"));
+    }
 
     private void showProgressBar() {
         progressBar.setVisibility(View.VISIBLE);
@@ -185,5 +184,28 @@ public class TranslationFragment extends Fragment implements TranslatorService.T
     public void onDestroyView() {
         super.onDestroyView();
         translatorService.setCallback(null);
+        supLangsLoaded = false;
     }
+
+
+    private TextWatcher watcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            if (s.length() > 0 ) {
+                translatorService.requestTranslate();
+            } else {
+                translatedText.setText("");
+            }
+        }
+    };
+
+
 }

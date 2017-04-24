@@ -1,5 +1,7 @@
 package com.rv150.mobilization.network;
 
+import com.rv150.mobilization.model.TranslateResponse;
+
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Retrofit;

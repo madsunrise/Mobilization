@@ -14,6 +14,7 @@ import com.rv150.mobilization.R;
 import com.rv150.mobilization.adapter.TranslationListAdapter;
 import com.rv150.mobilization.dao.TranslationDAO;
 import com.rv150.mobilization.model.Translation;
+import com.rv150.mobilization.utils.UiThread;
 
 import java.util.List;
 
@@ -24,10 +25,13 @@ import butterknife.ButterKnife;
  * Created by ivan on 24.04.17.
  */
 
-public class ListFragment extends Fragment {
+public class TranslationsListFragment extends Fragment {
 
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
+
+    private State state;
+    private TranslationDAO translationDAO;
 
     @Nullable
     @Override
@@ -35,6 +39,8 @@ public class ListFragment extends Fragment {
         View view = inflater.inflate(R.layout.saved_translations_fragment, container, false);
         ButterKnife.bind(this, view);
         setUpRecyclerView();
+        translationDAO = TranslationDAO.getInstance(getContext());
+        updateData();
         return view;
     }
 
@@ -43,11 +49,48 @@ public class ListFragment extends Fragment {
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(llm);
         recyclerView.setHasFixedSize(true);
-        List<Translation> translationList = TranslationDAO.getInstance(getContext()).getAll();
-        TranslationListAdapter adapter = new TranslationListAdapter(translationList);
-        recyclerView.setAdapter(adapter);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
                 llm.getOrientation());
         recyclerView.addItemDecoration(dividerItemDecoration);
+    }
+
+
+    public void updateData() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final List<Translation> translationList;
+                switch (state) {
+                    case HISTORY:
+                        translationList = translationDAO.getAll();
+                        break;
+                    case FAVORITES:
+                        translationList = translationDAO.getFavorites();
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Unknown state value!");
+                }
+                UiThread.run(new Runnable() {
+                    @Override
+                    public void run() {
+                        setDataToRecyclerView(translationList);
+                    }
+                });
+            }
+        }).start();
+    }
+
+
+    private void setDataToRecyclerView(List<Translation> data) {
+        TranslationListAdapter adapter = new TranslationListAdapter(data);
+        recyclerView.swapAdapter(adapter, false);
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public enum State {
+        HISTORY, FAVORITES
     }
 }

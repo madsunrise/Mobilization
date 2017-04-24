@@ -7,13 +7,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.rv150.mobilization.R;
-import com.rv150.mobilization.fragment.ListFragment;
-import com.rv150.mobilization.fragment.TranslationFragment;
+import com.rv150.mobilization.fragment.MainFragment;
+import com.rv150.mobilization.fragment.TranslationsListFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -23,8 +21,8 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.bottom_toolbar)
     BottomNavigationView bottomToolbar;
 
-    private Fragment translationFragment = new TranslationFragment();
-    private Fragment listFragment = new ListFragment();
+    private MainFragment mainFragment = new MainFragment();
+    private TranslationsListFragment translationsListFragment = new TranslationsListFragment();
 
 
     @Override
@@ -33,22 +31,24 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         setTitle(R.string.translator);
-        changeFragment(translationFragment, false);
+        changeFragment(mainFragment);
 
         bottomToolbar.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.action_translate:
-                        changeFragment(translationFragment, false);
+                        changeFragment(mainFragment);
                         setTitle(R.string.translator);
                         return true;
                     case R.id.action_history:
-                        changeFragment(listFragment, true);
+                        translationsListFragment.setState(TranslationsListFragment.State.HISTORY);
+                        changeFragment(translationsListFragment);
                         setTitle(R.string.history);
                         return true;
                     case R.id.action_favorites:
-                        changeFragment(listFragment, true);
+                        translationsListFragment.setState(TranslationsListFragment.State.FAVORITES);
+                        changeFragment(translationsListFragment);
                         setTitle(R.string.favorites);
                         return true;
                 }
@@ -59,16 +59,14 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    private void changeFragment(Fragment fragment, boolean addToBackStack) {
+    private void changeFragment(Fragment fragment) {
+        if (fragment instanceof TranslationsListFragment && translationsListFragment.isAdded()) {
+            translationsListFragment.updateData();
+            return;
+        }
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.container, fragment);
-        if (addToBackStack) {
-            transaction.addToBackStack(null);
-        }
         transaction.commitAllowingStateLoss();
     }
-
-
-    private final static String TAG = MainActivity.class.getSimpleName();
 }

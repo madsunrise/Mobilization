@@ -6,6 +6,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.rv150.mobilization.model.TranslateRequest;
+import com.rv150.mobilization.model.TranslateResponse;
 import com.rv150.mobilization.model.Translation;
 import com.rv150.mobilization.utils.UiThread;
 
@@ -60,8 +61,8 @@ public class TranslatorService {
             .build(new CacheLoader<TranslateRequest, String>() {
                 @Override
                 public String load(TranslateRequest key) throws Exception {
-                    String from = key.getFrom();
-                    String to = key.getTo();
+                    String from = key.getFromCode();
+                    String to = key.getToCode();
                     String text = key.getText();
                     Call<TranslateResponse> call = api.getTranslate(API_KEY, from + '-' + to, text);
                     Response<TranslateResponse> response = call.execute();
@@ -83,6 +84,9 @@ public class TranslatorService {
 
     public void requestTranslate() {
         final TranslateRequest request = callback.getFreshData();
+        if (request == null) {
+            return;
+        }
         String result = cache.getIfPresent(request);
         if (result != null) {
             Log.d(TAG, "Getting value from cache!");
@@ -145,7 +149,7 @@ public class TranslatorService {
         });
     }
 
-    public void getSupportedLanguages(final String ui) {
+    public void requestSupportedLanguages(final String ui) {
         Call<SupportedLanguages> call = api.getSupLangs(API_KEY, ui);
         call.enqueue(new Callback<SupportedLanguages>() {
             @Override
