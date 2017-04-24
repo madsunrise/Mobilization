@@ -15,8 +15,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static class Translation implements BaseColumns {
         public static final String TABLE_NAME = "translate";
-        public static final String COLUMN_NAME_FROM = "from";
-        public static final String COLUMN_NAME_TO = "to";
+        public static final String COLUMN_NAME_FROM = "from_text";
+        public static final String COLUMN_NAME_TO = "to_text";
         public static final String COLUMN_NAME_FAVORITE = "favorite";
     }
 

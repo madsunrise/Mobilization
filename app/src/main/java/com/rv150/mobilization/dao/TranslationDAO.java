@@ -58,7 +58,12 @@ public class TranslationDAO {
         boolean favorite = cursor.getInt(
                 cursor.getColumnIndexOrThrow(DBHelper.Translation.COLUMN_NAME_FAVORITE)) != 0;
 
-        return new Translation(id, from, to, favorite);
+        Translation result = new Translation();
+        result.setId(id);
+        result.setFrom(from);
+        result.setTo(to);
+        result.setFavorite(favorite);
+        return result;
     }
 
 
