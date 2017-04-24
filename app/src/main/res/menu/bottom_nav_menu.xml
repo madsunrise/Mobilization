@@ -2,18 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/my_action1"
+        android:id="@+id/action_translate"
         android:enabled="true"
-        android:title="item1"
+        android:title="translate"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/my_action2"
+        android:id="@+id/action_history"
         android:enabled="true"
-        android:title="item2"
+        android:icon="@drawable/ic_history_white_24dp"
+        android:title="history"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/my_action3"
+        android:id="@+id/action_favorites"
         android:enabled="true"
-        android:title="item3"
+        android:title="favorite"
         app:showAsAction="ifRoom" />
 </menu>
