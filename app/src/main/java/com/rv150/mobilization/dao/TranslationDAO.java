@@ -95,18 +95,4 @@ public class TranslationDAO {
 
         return db.insert(DBHelper.Translation.TABLE_NAME, null, values);
     }
-
-
-    public void updateTranslation(Translation translation) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-
-        values.put(DBHelper.Translation.COLUMN_NAME_TO, translation.getTo());
-        values.put(DBHelper.Translation.COLUMN_NAME_FROM, translation.getFrom());
-        int favorite = translation.isFavorite() ? 1 : 0;
-        values.put(DBHelper.Translation.COLUMN_NAME_FAVORITE, favorite);
-
-        db.update(DBHelper.Translation.TABLE_NAME, values,
-                DBHelper.Translation._ID + " = ?", new String[]{String.valueOf(translation.getId())});
-    }
 }

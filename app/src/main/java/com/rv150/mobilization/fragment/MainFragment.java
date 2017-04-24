@@ -24,7 +24,6 @@ import com.rv150.mobilization.dao.TranslationDAO;
 import com.rv150.mobilization.model.TranslateRequest;
 import com.rv150.mobilization.model.Translation;
 import com.rv150.mobilization.network.TranslatorService;
-import com.rv150.mobilization.utils.UiThread;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -130,19 +129,16 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
 
     @Override
     public void dataLoadingFailed(final int errCode) {
-        UiThread.run(new Runnable() {
-            @Override
-            public void run() {
-                switch (errCode) {
-                    case ERR_NETWORK: {
-                        Toast.makeText(getContext(), R.string.network_error_occured, Toast.LENGTH_SHORT).show();
-                    }
-                    default: {
-                        Toast.makeText(getContext(), R.string.internal_error_occured, Toast.LENGTH_SHORT).show();
-                    }
-                }
+        switch (errCode) {
+            case ERR_NETWORK: {
+                Toast.makeText(getContext(), R.string.network_error_occured, Toast.LENGTH_SHORT).show();
+                break;
             }
-        });
+            default: {
+                Toast.makeText(getContext(), R.string.internal_error_occured, Toast.LENGTH_SHORT).show();
+                break;
+            }
+        }
     }
 
 

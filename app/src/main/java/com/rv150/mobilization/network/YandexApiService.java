@@ -18,6 +18,9 @@ import retrofit2.http.Query;
 
 interface YandexApiService {
 
+    String API_KEY = "trnsl.1.1.20170330T065607Z.dc9520b57e28c5f3.d470142e2a9021eb88919a66af16cf82457f17f0";
+    String BASE_URL = "https://translate.yandex.net";
+
     @FormUrlEncoded
     @POST("/api/v1.5/tr.json/translate")
     Call<TranslateResponse> getTranslate(
@@ -37,7 +40,7 @@ interface YandexApiService {
 
 
     Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl("https://translate.yandex.net")
+            .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create()).client(okHttpClient)
             .build();
 }

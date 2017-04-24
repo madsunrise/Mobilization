@@ -18,25 +18,22 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static com.rv150.mobilization.network.YandexApiService.API_KEY;
+
 /**
  * Created by ivan on 30.03.17.
  */
 
 public class TranslatorService {
     private static final TranslatorService instance = new TranslatorService();
-
-    private TranslatorService() {}
-
     private final YandexApiService api = YandexApiService.retrofit.create(YandexApiService.class);
-    private static final String API_KEY = "trnsl.1.1.20170330T065607Z.dc9520b57e28c5f3.d470142e2a9021eb88919a66af16cf82457f17f0";
-
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private TranslateCallback callback;
 
     public static final int ERR_NETWORK = 0;
-    public static final int UNKNOWN_ERROR = 1;
 
+    private TranslatorService() {}
     public static TranslatorService getInstance() {
         return instance;
     }
@@ -84,9 +81,6 @@ public class TranslatorService {
 
     public void requestTranslate() {
         final TranslateRequest request = callback.getFreshData();
-        if (request == null) {
-            return;
-        }
         String result = cache.getIfPresent(request);
         if (result != null) {
             Log.d(TAG, "Getting value from cache!");
@@ -116,8 +110,8 @@ public class TranslatorService {
                     Translation translation = new Translation(input.getText(), result);
                     onRequestFinished(translation);
                 } catch (Exception ex) {
-                    //TODO Cache returns null
                     Log.e(TAG, "Failed to load translate: " + ex.getMessage());
+                    onRequestFinished(null);
                 }
             }
         });
@@ -140,7 +134,12 @@ public class TranslatorService {
             @Override
             public void run() {
                 if (callback != null) {
-                    callback.onDataLoaded(result, false);
+                    if (result != null) {
+                        callback.onDataLoaded(result, false);
+                    }
+                    else {
+                        callback.dataLoadingFailed(ERR_NETWORK);
+                    }
                     if (nextRequest) {
                         runAsyncTask(callback.getFreshData());
                     }
@@ -148,6 +147,8 @@ public class TranslatorService {
             }
         });
     }
+
+
 
     public void requestSupportedLanguages(final String ui) {
         Call<SupportedLanguages> call = api.getSupLangs(API_KEY, ui);
@@ -163,16 +164,21 @@ public class TranslatorService {
                 }
                 else {
                     Log.e(TAG, "Getting supported languages failed!");
+                    if (callback != null) {
+                        callback.dataLoadingFailed(ERR_NETWORK);
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<SupportedLanguages> call, Throwable t) {
-                Log.e(TAG, "Getting supported languages failed!");
+                Log.e(TAG, "Getting supported languages failed! " + t.getMessage());
+                if (callback != null) {
+                    callback.dataLoadingFailed(ERR_NETWORK);
+                }
             }
         });
     }
-
 
     private final static String TAG = TranslatorService.class.getSimpleName();
 }
