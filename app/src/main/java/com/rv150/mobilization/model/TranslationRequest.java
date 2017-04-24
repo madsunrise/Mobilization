@@ -4,15 +4,15 @@ package com.rv150.mobilization.model;
  * Created by ivan on 22.04.17.
  */
 
-public class TranslateRequest {
+public class TranslationRequest {
     private String fromCode;
     private String toCode;
     private String text;
 
-    public TranslateRequest() {
+    public TranslationRequest() {
     }
 
-    public TranslateRequest(String fromCode, String toCode, String text) {
+    public TranslationRequest(String fromCode, String toCode, String text) {
         this.fromCode = fromCode;
         this.toCode = toCode;
         this.text = text;
@@ -47,7 +47,7 @@ public class TranslateRequest {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TranslateRequest request = (TranslateRequest) o;
+        TranslationRequest request = (TranslationRequest) o;
 
         if (!fromCode.equals(request.fromCode)) return false;
         if (!toCode.equals(request.toCode)) return false;

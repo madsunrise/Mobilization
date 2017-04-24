@@ -1,6 +1,6 @@
 package com.rv150.mobilization.network;
 
-import com.rv150.mobilization.model.TranslateResponse;
+import com.rv150.mobilization.model.TranslationResponse;
 
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
@@ -23,7 +23,7 @@ interface YandexApiService {
 
     @FormUrlEncoded
     @POST("/api/v1.5/tr.json/translate")
-    Call<TranslateResponse> getTranslate(
+    Call<TranslationResponse> getTranslate(
             @Query("key") String key,
             @Query("lang") String lang,
             @Field("text") String text);

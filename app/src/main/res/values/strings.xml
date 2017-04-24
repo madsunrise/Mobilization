@@ -13,5 +13,6 @@
     <string name="added">Добавлено</string>
     <string name="default_lang_from">Английский</string>
     <string name="default_lang_to">Русский</string>
+    <string name="close">Закрыть</string>
 
 </resources>

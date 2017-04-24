@@ -1,8 +1,10 @@
 package com.rv150.mobilization.fragment;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -22,7 +24,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.rv150.mobilization.R;
 import com.rv150.mobilization.dao.TranslationDAO;
-import com.rv150.mobilization.model.TranslateRequest;
+import com.rv150.mobilization.model.TranslationRequest;
 import com.rv150.mobilization.model.Translation;
 import com.rv150.mobilization.network.TranslatorService;
 
@@ -42,6 +44,7 @@ import static com.rv150.mobilization.network.TranslatorService.ERR_NETWORK;
  */
 
 public class MainFragment extends Fragment implements TranslatorService.TranslateCallback {
+
     private final TranslatorService translatorService = TranslatorService.getInstance();
 
     @BindView(R.id.input_text)
@@ -64,12 +67,6 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
     private TranslationDAO translationDAO;
     private BiMap<String, String> availableLanguages = null;
     private long lastDataReceiving;
-
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
 
     @Nullable
     @Override
@@ -135,28 +132,13 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
 
 
 
-    @Override
-    public void dataLoadingFailed(final int errCode) {
-        switch (errCode) {
-            case ERR_NETWORK: {
-                Toast.makeText(getContext(), R.string.network_error_occured, Toast.LENGTH_SHORT).show();
-                break;
-            }
-            default: {
-                Toast.makeText(getContext(), R.string.internal_error_occured, Toast.LENGTH_SHORT).show();
-                break;
-            }
-        }
-    }
-
-
-    public TranslateRequest getFreshData() {
+    public TranslationRequest getFreshData() {
         String from = spinnerFrom.getSelectedItem().toString();
         String fromCode = availableLanguages.inverse().get(from);
         String to = spinnerTo.getSelectedItem().toString();
         String toCode = availableLanguages.inverse().get(to);
         String text = userInput.getText().toString();
-        return new TranslateRequest(fromCode, toCode, text);
+        return new TranslationRequest(fromCode, toCode, text);
     }
 
 
@@ -175,6 +157,7 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
         spinnerTo.setSelection(adapterTo.getPosition(getString(R.string.default_lang_to)));
     }
 
+
     private void showProgressBar() {
         progressBar.setVisibility(View.VISIBLE);
         container.setVisibility(View.GONE);
@@ -184,11 +167,6 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
         container.setVisibility(View.VISIBLE);
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        translatorService.setCallback(null);
-    }
 
 
     @OnClick(R.id.add_to_favorites_btn)
@@ -204,6 +182,43 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
             }
         }).start();
         Toast.makeText(getContext(), R.string.added, Toast.LENGTH_SHORT).show();
+    }
+
+
+    @Override
+    public void dataLoadingFailed(final int errCode) {
+        switch (errCode) {
+            case ERR_NETWORK: {
+                Toast.makeText(getContext(), R.string.network_error_occured, Toast.LENGTH_SHORT).show();
+                break;
+            }
+            default: {
+                Toast.makeText(getContext(), R.string.internal_error_occured, Toast.LENGTH_SHORT).show();
+                break;
+            }
+        }
+    }
+
+
+    @Override
+    public void supLanguagesLoadingFailed() {
+        hideProgressBar();
+        new AlertDialog.Builder(getContext())
+                .setTitle(R.string.internal_error_occured)
+                .setCancelable(false)
+                .setPositiveButton(R.string.close, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        getActivity().finish();
+                    }
+                }).show();
+    }
+
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        translatorService.setCallback(null);
     }
 
 

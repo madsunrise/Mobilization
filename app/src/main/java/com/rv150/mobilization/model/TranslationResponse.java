@@ -10,7 +10,7 @@ import java.util.List;
  * Created by ivan on 10.04.17.
  */
 
-public class TranslateResponse {
+public class TranslationResponse {
     @SerializedName("code")
     @Expose
     private Integer code;

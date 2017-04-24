@@ -5,8 +5,8 @@ import android.util.Log;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.rv150.mobilization.model.TranslateRequest;
-import com.rv150.mobilization.model.TranslateResponse;
+import com.rv150.mobilization.model.TranslationRequest;
+import com.rv150.mobilization.model.TranslationResponse;
 import com.rv150.mobilization.model.Translation;
 import com.rv150.mobilization.utils.UiThread;
 
@@ -43,9 +43,10 @@ public class TranslatorService {
 
     public interface TranslateCallback {
         void onDataLoaded(Translation result, boolean nextRequest);
-        TranslateRequest getFreshData();
+        TranslationRequest getFreshData();
         void dataLoadingFailed(int errCode);
         void supLanguagesLoaded(Map<String, String> langs);
+        void supLanguagesLoadingFailed();
     }
 
     public void setCallback(TranslateCallback callback) {
@@ -53,20 +54,20 @@ public class TranslatorService {
     }
 
 
-    private final LoadingCache<TranslateRequest, String> cache = CacheBuilder.newBuilder()
+    private final LoadingCache<TranslationRequest, String> cache = CacheBuilder.newBuilder()
             .maximumSize(100)
-            .build(new CacheLoader<TranslateRequest, String>() {
+            .build(new CacheLoader<TranslationRequest, String>() {
                 @Override
-                public String load(TranslateRequest key) throws Exception {
+                public String load(TranslationRequest key) throws Exception {
                     String from = key.getFromCode();
                     String to = key.getToCode();
                     String text = key.getText();
-                    Call<TranslateResponse> call = api.getTranslate(API_KEY, from + '-' + to, text);
-                    Response<TranslateResponse> response = call.execute();
+                    Call<TranslationResponse> call = api.getTranslate(API_KEY, from + '-' + to, text);
+                    Response<TranslationResponse> response = call.execute();
                     if (!response.isSuccessful()) {
                         return null;
                     }
-                    TranslateResponse result = response.body();
+                    TranslationResponse result = response.body();
                     if (!result.getText().isEmpty()) {
                         return result.getText().get(0);
                     }
@@ -80,7 +81,7 @@ public class TranslatorService {
 
 
     public void requestTranslate() {
-        final TranslateRequest request = callback.getFreshData();
+        final TranslationRequest request = callback.getFreshData();
         String result = cache.getIfPresent(request);
         if (result != null) {
             Log.d(TAG, "Getting value from cache!");
@@ -90,7 +91,7 @@ public class TranslatorService {
         makeNetworkRequest(request);
     }
 
-    private synchronized void makeNetworkRequest(TranslateRequest input) {
+    private synchronized void makeNetworkRequest(TranslationRequest input) {
         if (active) {
             dirty = true;
             return;
@@ -100,7 +101,7 @@ public class TranslatorService {
     }
 
 
-    private void runAsyncTask(final TranslateRequest input) {
+    private void runAsyncTask(final TranslationRequest input) {
         Log.d(TAG, "Running async request...");
         executor.execute(new Runnable() {
             @Override
@@ -165,7 +166,7 @@ public class TranslatorService {
                 else {
                     Log.e(TAG, "Getting supported languages failed!");
                     if (callback != null) {
-                        callback.dataLoadingFailed(ERR_NETWORK);
+                        callback.supLanguagesLoadingFailed();
                     }
                 }
             }
@@ -174,7 +175,7 @@ public class TranslatorService {
             public void onFailure(Call<SupportedLanguages> call, Throwable t) {
                 Log.e(TAG, "Getting supported languages failed! " + t.getMessage());
                 if (callback != null) {
-                    callback.dataLoadingFailed(ERR_NETWORK);
+                    callback.supLanguagesLoadingFailed();
                 }
             }
         });
