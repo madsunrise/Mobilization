@@ -3,64 +3,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_marginTop="@dimen/activity_vertical_margin"
-    android:layout_marginBottom="@dimen/activity_vertical_margin"
-    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-    android:layout_marginRight="@dimen/activity_horizontal_margin"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.rv150.mobilization.activity.MainActivity">
 
-
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/progress_bar"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_centerInParent="true">
-    </ProgressBar>
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <FrameLayout
         android:id="@+id/container"
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
+    </FrameLayout>
 
+    <android.support.design.widget.BottomNavigationView
+        android:id="@+id/bottom_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:itemBackground="@color/colorPrimary"
+        app:menu="@menu/bottom_nav_menu"
+        app:itemTextColor="#FFFFFF"
+        app:itemIconTint="#FFFFFF" />
+        <!--app:itemIconTint="@color/white"-->
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:orientation="horizontal">
-            <Spinner
-                android:id="@+id/spinner_from"
-                android:layout_width="0dp"
-                android:layout_weight="5"
-                android:layout_height="match_parent" />
-
-            <Button
-                android:id="@+id/reverse_button"
-                android:background="@drawable/reverse_button"
-                android:layout_width="0dp"
-                android:layout_weight="2"
-                android:layout_height="match_parent" />
-
-            <Spinner
-                android:id="@+id/spinner_to"
-                android:layout_width="0dp"
-                android:layout_weight="5"
-                android:layout_height="match_parent" />
-        </LinearLayout>
-
-        <EditText
-            android:id="@+id/input_text"
-            android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:hint="@string/enter_text_to_translate" />
-
-        <TextView
-            android:id="@+id/translated_text"
-            android:textSize="20sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-    </LinearLayout>
 </RelativeLayout>

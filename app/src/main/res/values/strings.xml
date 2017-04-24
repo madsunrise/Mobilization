@@ -6,5 +6,8 @@
     <string name="network_error_occured">Произошла сетевая ошибка!</string>
     <string name="internal_error_occured">Произошла внутренняя ошибка</string>
     <string name="ui_lang">ru</string>
+    <string name="translator">Переводчик</string>
+    <string name="history">История</string>
+    <string name="favorites">Избранное</string>
 
 </resources>

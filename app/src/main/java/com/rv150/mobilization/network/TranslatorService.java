@@ -6,6 +6,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.rv150.mobilization.model.TranslateRequest;
+import com.rv150.mobilization.model.TranslateResponse;
+import com.rv150.mobilization.model.Translation;
 import com.rv150.mobilization.utils.UiThread;
 
 import java.util.Map;
@@ -43,7 +45,7 @@ public class TranslatorService {
     private boolean dirty = false;
 
     public interface TranslateCallback {
-        void onDataLoaded(String result, boolean nextRequest);
+        void onDataLoaded(Translation result, boolean nextRequest);
         TranslateRequest getFreshData();
         void dataLoadingFailed(int errCode);
         void supLanguagesLoaded(Map<String, String> langs);
@@ -59,8 +61,8 @@ public class TranslatorService {
             .build(new CacheLoader<TranslateRequest, String>() {
                 @Override
                 public String load(TranslateRequest key) throws Exception {
-                    String from = key.getFrom();
-                    String to = key.getTo();
+                    String from = key.getFromCode();
+                    String to = key.getToCode();
                     String text = key.getText();
                     Call<TranslateResponse> call = api.getTranslate(API_KEY, from + '-' + to, text);
                     Response<TranslateResponse> response = call.execute();
@@ -82,10 +84,13 @@ public class TranslatorService {
 
     public void requestTranslate() {
         final TranslateRequest request = callback.getFreshData();
+        if (request == null) {
+            return;
+        }
         String result = cache.getIfPresent(request);
         if (result != null) {
             Log.d(TAG, "Getting value from cache!");
-            callback.onDataLoaded(result, false);
+            callback.onDataLoaded(new Translation(request.getText(), result), false);
             return;
         }
         makeNetworkRequest(request);
@@ -108,7 +113,8 @@ public class TranslatorService {
             public void run() {
                 try {
                     final String result = cache.get(input);
-                    onRequestFinished(result);
+                    Translation translation = new Translation(input.getText(), result);
+                    onRequestFinished(translation);
                 } catch (Exception ex) {
                     //TODO Cache returns null
                     Log.e(TAG, "Failed to load translate: " + ex.getMessage());
@@ -117,7 +123,7 @@ public class TranslatorService {
         });
     }
 
-    private synchronized void onRequestFinished(String result) {
+    private synchronized void onRequestFinished(Translation result) {
         if (dirty) {
             dirty = false;
             notifyActivity(result, true);
@@ -129,7 +135,7 @@ public class TranslatorService {
 
 
 
-    private void notifyActivity(final String result, final boolean nextRequest) {
+    private void notifyActivity(final Translation result, final boolean nextRequest) {
         UiThread.run(new Runnable() {
             @Override
             public void run() {
@@ -143,7 +149,7 @@ public class TranslatorService {
         });
     }
 
-    public void getSupportedLanguages(final String ui) {
+    public void requestSupportedLanguages(final String ui) {
         Call<SupportedLanguages> call = api.getSupLangs(API_KEY, ui);
         call.enqueue(new Callback<SupportedLanguages>() {
             @Override

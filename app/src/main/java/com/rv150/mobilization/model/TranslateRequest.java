@@ -5,33 +5,33 @@ package com.rv150.mobilization.model;
  */
 
 public class TranslateRequest {
-    private String from;
-    private String to;
+    private String fromCode;
+    private String toCode;
     private String text;
 
     public TranslateRequest() {
     }
 
-    public TranslateRequest(String from, String to, String text) {
-        this.from = from;
-        this.to = to;
+    public TranslateRequest(String fromCode, String toCode, String text) {
+        this.fromCode = fromCode;
+        this.toCode = toCode;
         this.text = text;
     }
 
-    public String getFrom() {
-        return from;
+    public String getFromCode() {
+        return fromCode;
     }
 
-    public void setFrom(String from) {
-        this.from = from;
+    public void setFromCode(String fromCode) {
+        this.fromCode = fromCode;
     }
 
-    public String getTo() {
-        return to;
+    public String getToCode() {
+        return toCode;
     }
 
-    public void setTo(String to) {
-        this.to = to;
+    public void setToCode(String toCode) {
+        this.toCode = toCode;
     }
 
     public String getText() {
@@ -49,16 +49,16 @@ public class TranslateRequest {
 
         TranslateRequest request = (TranslateRequest) o;
 
-        if (!from.equals(request.from)) return false;
-        if (!to.equals(request.to)) return false;
+        if (!fromCode.equals(request.fromCode)) return false;
+        if (!toCode.equals(request.toCode)) return false;
         return text.equals(request.text);
 
     }
 
     @Override
     public int hashCode() {
-        int result = from.hashCode();
-        result = 31 * result + to.hashCode();
+        int result = fromCode.hashCode();
+        result = 31 * result + toCode.hashCode();
         result = 31 * result + text.hashCode();
         return result;
     }

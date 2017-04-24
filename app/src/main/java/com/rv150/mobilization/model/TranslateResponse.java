@@ -1,4 +1,4 @@
-package com.rv150.mobilization.network;
+package com.rv150.mobilization.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -10,7 +10,7 @@ import java.util.List;
  * Created by ivan on 10.04.17.
  */
 
-class TranslateResponse {
+public class TranslateResponse {
     @SerializedName("code")
     @Expose
     private Integer code;

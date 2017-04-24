@@ -15,9 +15,10 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static class Translation implements BaseColumns {
         public static final String TABLE_NAME = "translate";
-        public static final String COLUMN_NAME_FROM = "from";
-        public static final String COLUMN_NAME_TO = "to";
+        public static final String COLUMN_NAME_FROM = "from_text";
+        public static final String COLUMN_NAME_TO = "to_text";
         public static final String COLUMN_NAME_FAVORITE = "favorite";
+        public static final String COLUMN_NAME_DATE_CREATED = "date_created";
     }
 
     private static final int DATABASE_VERSION = 1;
@@ -28,7 +29,8 @@ public class DBHelper extends SQLiteOpenHelper {
                     Translation._ID + " INTEGER PRIMARY KEY," +
                     Translation.COLUMN_NAME_FROM + " TEXT NOT NULL," +
                     Translation.COLUMN_NAME_TO + " TEXT NOT NULL," +
-                    Translation.COLUMN_NAME_FAVORITE + " INTEGER DEFAULT 0)";
+                    Translation.COLUMN_NAME_FAVORITE + " INTEGER DEFAULT 0," +
+                    Translation.COLUMN_NAME_DATE_CREATED + " INTEGER NOT NULL)";
 
     private DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
