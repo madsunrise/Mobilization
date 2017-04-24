@@ -1,52 +1,60 @@
 package com.rv150.mobilization.activity;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.rv150.mobilization.R;
-import com.rv150.mobilization.dao.TranslationDAO;
+import com.rv150.mobilization.fragment.ListFragment;
 import com.rv150.mobilization.fragment.TranslationFragment;
-import com.rv150.mobilization.model.TranslateRequest;
-import com.rv150.mobilization.model.Translation;
-import com.rv150.mobilization.network.TranslatorService;
-import com.rv150.mobilization.utils.UiThread;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
-
-import static com.rv150.mobilization.network.TranslatorService.ERR_NETWORK;
 
 public class MainActivity extends AppCompatActivity {
+
+    @BindView(R.id.bottom_toolbar)
+    BottomNavigationView bottomToolbar;
+
+    private Fragment translationFragment = new TranslationFragment();
+    private Fragment listFragment = new ListFragment();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        changeFragment(new TranslationFragment(), false);
+        ButterKnife.bind(this);
+        setTitle(R.string.translator);
+        changeFragment(translationFragment, false);
+
+        bottomToolbar.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.action_translate:
+                        changeFragment(translationFragment, false);
+                        setTitle(R.string.translator);
+                        return true;
+                    case R.id.action_history:
+                        changeFragment(listFragment, true);
+                        setTitle(R.string.history);
+                        return true;
+                    case R.id.action_favorites:
+                        changeFragment(listFragment, true);
+                        setTitle(R.string.favorites);
+                        return true;
+                }
+                return false;
+            }
+        });
     }
 
 
