@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -55,17 +56,16 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
     @BindView(R.id.spinner_to)
     Spinner spinnerTo;
 
-    private ArrayAdapter<String> adapterFrom;
-    private ArrayAdapter<String> adapterTo;
-
     @BindView(R.id.container)
     LinearLayout container;
     @BindView(R.id.progress_bar)
     ProgressBar progressBar;
+    @BindView(R.id.add_to_favorites_btn)
+    Button favoritesButton;
 
+    private TranslationDAO translationDAO;
 
     private BiMap<String, String> availableLanguages = null;
-    private boolean supLangsLoaded;
 
 
     @Override
@@ -76,7 +76,7 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.translation_fragment, container, false);
+        View view = inflater.inflate(R.layout.main_fragment, container, false);
         ButterKnife.bind(this, view);
 
         if (savedInstanceState == null) {
@@ -91,6 +91,7 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
         else {
             updateSpinners();
         }
+        translationDAO = TranslationDAO.getInstance(getContext());
         return view;
     }
 
@@ -98,7 +99,7 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
     public void onDataLoaded(final Translation data, boolean nextRequest) {
         if (data != null) {
             translatedText.setText(data.getTo());
-            final TranslationDAO translationDAO = TranslationDAO.getInstance(getContext());
+            favoritesButton.setVisibility(View.VISIBLE);
             Executors.newSingleThreadExecutor().execute(new Runnable() {
                 @Override
                 public void run() {
@@ -110,7 +111,6 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
 
     @Override
     public void supLanguagesLoaded(Map<String, String> langs) {
-        supLangsLoaded = true;
         hideProgressBar();
         availableLanguages = HashBiMap.create(langs);
         updateSpinners();
@@ -160,15 +160,15 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
         List<String> langList = new ArrayList<>(availableLanguages.values());
         Collections.sort(langList);
 
-        adapterFrom = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, langList);
+        ArrayAdapter<String> adapterFrom = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, langList);
         adapterFrom.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerFrom.setAdapter(adapterFrom);
-        spinnerFrom.setSelection(adapterFrom.getPosition("Английский"));
+        spinnerFrom.setSelection(adapterFrom.getPosition(getString(R.string.default_lang_from)));
 
-        adapterTo = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, langList);
+        ArrayAdapter<String> adapterTo = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, langList);
         adapterTo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTo.setAdapter(adapterTo);
-        spinnerTo.setSelection(adapterTo.getPosition("Русский"));
+        spinnerTo.setSelection(adapterTo.getPosition(getString(R.string.default_lang_to)));
     }
 
     private void showProgressBar() {
@@ -184,7 +184,22 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
     public void onDestroyView() {
         super.onDestroyView();
         translatorService.setCallback(null);
-        supLangsLoaded = false;
+    }
+
+
+    @OnClick(R.id.add_to_favorites_btn)
+    public void addToFavorites() {
+        String from = userInput.getText().toString();
+        String to = translatedText.getText().toString();
+        final Translation translation = new Translation(from, to, true);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                translationDAO.insertTranslation(translation);
+            }
+        }).start();
+        Toast.makeText(getContext(), R.string.added, Toast.LENGTH_SHORT).show();
     }
 
 
@@ -199,9 +214,10 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
 
         @Override
         public void afterTextChanged(Editable s) {
-            if (s.length() > 0 ) {
+            if (s.length() > 0) {
                 translatorService.requestTranslate();
             } else {
+                favoritesButton.setVisibility(View.GONE);
                 translatedText.setText("");
             }
         }

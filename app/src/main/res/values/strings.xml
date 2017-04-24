@@ -9,5 +9,9 @@
     <string name="translator">Переводчик</string>
     <string name="history">История</string>
     <string name="favorites">Избранное</string>
+    <string name="add_to_favorites">Добавить в избранное</string>
+    <string name="added">Добавлено</string>
+    <string name="default_lang_from">Английский</string>
+    <string name="default_lang_to">Русский</string>
 
 </resources>
