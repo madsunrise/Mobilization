@@ -13,12 +13,12 @@ public class Translation {
     public Translation() {
     }
 
-    public Translation(String from, String to, boolean favorite) {
-        this(-1, from, to, favorite);
+    public Translation(String from, String to) {
+        this(from, to, false);
     }
 
-    public Translation(long id, String from, String to, boolean favorite) {
-        this.id = id;
+    public Translation(String from, String to, boolean favorite) {
+        this.id = -1;
         this.from = from;
         this.to = to;
         this.favorite = favorite;
