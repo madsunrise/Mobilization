@@ -1,5 +1,6 @@
 package com.rv150.mobilization.network;
 
+import com.rv150.mobilization.model.SupportedLanguages;
 import com.rv150.mobilization.model.TranslationResponse;
 
 import okhttp3.OkHttpClient;

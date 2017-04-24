@@ -23,6 +23,8 @@ import butterknife.ButterKnife;
 
 /**
  * Created by ivan on 24.04.17.
+ *
+ * Фрагмент отвечает за отображение истории и избранного
  */
 
 public class TranslationsListFragment extends Fragment {
@@ -36,22 +38,12 @@ public class TranslationsListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.saved_translations_fragment, container, false);
+        View view = inflater.inflate(R.layout.translations_list_fragment, container, false);
         ButterKnife.bind(this, view);
         setUpRecyclerView();
         translationDAO = TranslationDAO.getInstance(getContext());
         updateData();
         return view;
-    }
-
-    private void setUpRecyclerView() {
-        LinearLayoutManager llm = new LinearLayoutManager(getContext());
-        llm.setOrientation(LinearLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(llm);
-        recyclerView.setHasFixedSize(true);
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
-                llm.getOrientation());
-        recyclerView.addItemDecoration(dividerItemDecoration);
     }
 
 
@@ -84,6 +76,17 @@ public class TranslationsListFragment extends Fragment {
     private void setDataToRecyclerView(List<Translation> data) {
         TranslationListAdapter adapter = new TranslationListAdapter(data);
         recyclerView.swapAdapter(adapter, false);
+    }
+
+
+    private void setUpRecyclerView() {
+        LinearLayoutManager llm = new LinearLayoutManager(getContext());
+        llm.setOrientation(LinearLayoutManager.VERTICAL);
+        recyclerView.setLayoutManager(llm);
+        recyclerView.setHasFixedSize(true);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
+                llm.getOrientation());
+        recyclerView.addItemDecoration(dividerItemDecoration);
     }
 
     public void setState(State state) {

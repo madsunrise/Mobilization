@@ -24,8 +24,8 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.rv150.mobilization.R;
 import com.rv150.mobilization.dao.TranslationDAO;
-import com.rv150.mobilization.model.TranslationRequest;
 import com.rv150.mobilization.model.Translation;
+import com.rv150.mobilization.model.TranslationRequest;
 import com.rv150.mobilization.network.TranslatorService;
 
 import java.util.ArrayList;
@@ -74,21 +74,20 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
         View view = inflater.inflate(R.layout.main_fragment, container, false);
         ButterKnife.bind(this, view);
 
-        if (savedInstanceState == null) {
-            userInput.addTextChangedListener(watcher);
-        }
+        userInput.addTextChangedListener(watcher);
 
         translatorService.setCallback(this);
         if (availableLanguages == null) {
-            translatorService.requestSupportedLanguages(getString(R.string.ui_lang));
+            translatorService.requestSupportedLanguages(getString(R.string.ui_lang)); // Запрашиваем поддерживаемые языки у сервера
             showProgressBar();
         }
         else {
-            updateSpinners();
+            updateSpinners();   // Языки есть в памяти, обновляем UI
         }
         translationDAO = TranslationDAO.getInstance(getContext());
         return view;
     }
+
 
     @Override
     public void onDataLoaded(final Translation data, boolean nextRequest) {
@@ -106,12 +105,13 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
                         Log.d(getClass().getSimpleName(), "Thread sleep error!");
                     }
                     if (System.currentTimeMillis() - lastDataReceiving >= 1000) { // Cохраняем в историю только те результаты,
-                        translationDAO.insertTranslation(data);                   // которые отображались более секунды
+                        translationDAO.insertTranslation(data);                   // которые отображались на экране более секунды
                     }
                 }
             }).start();
         }
     }
+
 
     @Override
     public void supLanguagesLoaded(Map<String, String> langs) {
@@ -174,7 +174,6 @@ public class MainFragment extends Fragment implements TranslatorService.Translat
         String from = userInput.getText().toString();
         String to = translatedText.getText().toString();
         final Translation translation = new Translation(from, to, true);
-
         new Thread(new Runnable() {
             @Override
             public void run() {

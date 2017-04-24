@@ -5,9 +5,10 @@ import android.util.Log;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.rv150.mobilization.model.SupportedLanguages;
+import com.rv150.mobilization.model.Translation;
 import com.rv150.mobilization.model.TranslationRequest;
 import com.rv150.mobilization.model.TranslationResponse;
-import com.rv150.mobilization.model.Translation;
 import com.rv150.mobilization.utils.UiThread;
 
 import java.util.Map;
@@ -79,9 +80,9 @@ public class TranslatorService {
 
 
 
-
+    // Запрос фрагмента на перевод
     public void requestTranslate() {
-        final TranslationRequest request = callback.getFreshData();
+        final TranslationRequest request = callback.getFreshData(); // Свежие данные берем из фрагмента
         String result = cache.getIfPresent(request);
         if (result != null) {
             Log.d(TAG, "Getting value from cache!");
@@ -91,6 +92,7 @@ public class TranslatorService {
         makeNetworkRequest(request);
     }
 
+    // Не более одного запроса к сети одновременно + dirty флаг, обозначающий, что по завершении текущего запроса необходимо сделать еще один
     private synchronized void makeNetworkRequest(TranslationRequest input) {
         if (active) {
             dirty = true;
@@ -121,16 +123,20 @@ public class TranslatorService {
     private synchronized void onRequestFinished(Translation result) {
         if (dirty) {
             dirty = false;
-            notifyActivity(result, true);
+            returnResult(result, true);
             return;
         }
         active = false;
-        notifyActivity(result, false);
+        returnResult(result, false);
     }
 
 
-
-    private void notifyActivity(final Translation result, final boolean nextRequest) {
+    /**
+     *
+     * @param result Результат запроса (null в случае ошибки)
+     * @param nextRequest требуется ли еще один запрос на перевод
+     */
+    private void returnResult(final Translation result, final boolean nextRequest) {
         UiThread.run(new Runnable() {
             @Override
             public void run() {
@@ -142,7 +148,7 @@ public class TranslatorService {
                         callback.dataLoadingFailed(ERR_NETWORK);
                     }
                     if (nextRequest) {
-                        runAsyncTask(callback.getFreshData());
+                        runAsyncTask(callback.getFreshData());  // Берем свежие данные и посылаем новый запрос
                     }
                 }
             }

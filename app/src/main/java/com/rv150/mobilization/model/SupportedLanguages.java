@@ -1,4 +1,4 @@
-package com.rv150.mobilization.network;
+package com.rv150.mobilization.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

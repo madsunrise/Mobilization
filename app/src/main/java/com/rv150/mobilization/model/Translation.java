@@ -18,7 +18,6 @@ public class Translation {
     }
 
     public Translation(String from, String to, boolean favorite) {
-        this.id = -1;
         this.from = from;
         this.to = to;
         this.favorite = favorite;
