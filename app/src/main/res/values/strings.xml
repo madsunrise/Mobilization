@@ -3,4 +3,16 @@
     <string name="enter_text_to_translate">Введите текст для перевода</string>
     <string name="translate">Перевести</string>
     <string name="loading">Загрузка&#8230;</string>
+    <string name="network_error_occured">Произошла сетевая ошибка!</string>
+    <string name="internal_error_occured">Произошла внутренняя ошибка</string>
+    <string name="ui_lang">ru</string>
+    <string name="translator">Переводчик</string>
+    <string name="history">История</string>
+    <string name="favorites">Избранное</string>
+    <string name="add_to_favorites">Добавить в избранное</string>
+    <string name="added">Добавлено</string>
+    <string name="default_lang_from">Английский</string>
+    <string name="default_lang_to">Русский</string>
+    <string name="close">Закрыть</string>
+
 </resources>

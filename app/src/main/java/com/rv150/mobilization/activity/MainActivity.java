@@ -1,76 +1,72 @@
 package com.rv150.mobilization.activity;
 
-import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 
 import com.rv150.mobilization.R;
-import com.rv150.mobilization.network.ApiHelper;
+import com.rv150.mobilization.fragment.MainFragment;
+import com.rv150.mobilization.fragment.TranslationsListFragment;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity implements ApiHelper.ApiCallback {
+public class MainActivity extends AppCompatActivity {
 
-    private final ApiHelper apiHelper = ApiHelper.getInstance();
+    @BindView(R.id.bottom_toolbar)
+    BottomNavigationView bottomToolbar;
 
-    private EditText userInput;
-    private Button translateBtn;
+    private MainFragment mainFragment = new MainFragment();
+    private TranslationsListFragment translationsListFragment = new TranslationsListFragment();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
+        setTitle(R.string.translator);
+        changeFragment(mainFragment);
 
-        userInput = (EditText) findViewById(R.id.input_text);
-        translateBtn = (Button) findViewById(R.id.translate_btn);
-        translateBtn.setOnClickListener(new View.OnClickListener() {
+        bottomToolbar.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
-            public void onClick(View v) {
-                translateBtn.setEnabled(false);
-                translateBtn.setText(getString(R.string.loading));
-                String query = userInput.getText().toString();
-                apiHelper.requestTranslate(query);
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.action_translate:
+                        changeFragment(mainFragment);
+                        setTitle(R.string.translator);
+                        return true;
+                    case R.id.action_history:
+                        translationsListFragment.setState(TranslationsListFragment.State.HISTORY);
+                        changeFragment(translationsListFragment);
+                        setTitle(R.string.history);
+                        return true;
+                    case R.id.action_favorites:
+                        translationsListFragment.setState(TranslationsListFragment.State.FAVORITES);
+                        changeFragment(translationsListFragment);
+                        setTitle(R.string.favorites);
+                        return true;
+                }
+                return false;
             }
         });
-
-        apiHelper.setCallback(this);
     }
 
 
 
-    @Override
-    public void onDataLoaded(String result) {
-
-        try {
-            JSONObject jsonObject = new JSONObject(result);
-            JSONArray array = jsonObject.getJSONArray("text");
-            final String text = (String)array.get(0);
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
-                    translateBtn.setEnabled(true);
-                    translateBtn.setText(getString(R.string.translate));
-                }
-            });
-
+    private void changeFragment(Fragment fragment) {
+        if (fragment instanceof TranslationsListFragment && translationsListFragment.isAdded()) {
+            translationsListFragment.updateData();
+            return;
         }
-        catch (Exception ex) {
-            Log.e(getClass().getSimpleName(), ex.getMessage());
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        apiHelper.setCallback(null);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.container, fragment);
+        transaction.commitAllowingStateLoss();
     }
 }

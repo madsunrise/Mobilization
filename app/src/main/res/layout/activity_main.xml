@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.rv150.mobilization.activity.MainActivity">
 
-    <EditText
-        android:id="@+id/input_text"
+    <FrameLayout
+        android:id="@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:hint="@string/enter_text_to_translate" />
-
-    <Button
-        android:id="@+id/translate_btn"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:text="@string/translate" />
+        android:layout_marginBottom="70dp">
+    </FrameLayout>
 
-</LinearLayout>
+    <android.support.design.widget.BottomNavigationView
+        android:id="@+id/bottom_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:itemBackground="@color/colorPrimary"
+        app:menu="@menu/bottom_nav_menu"
+        app:itemTextColor="#FFFFFF"
+        app:itemIconTint="#FFFFFF" />
+</RelativeLayout>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:top="15dp" android:left="15dp" android:right="15dp" android:bottom="15dp" android:drawable="@drawable/reverse_arrows" />
+    <item>
+        <shape xmlns:android="http://schemas.android.com/apk/res/android"
+            android:shape="rectangle">
+            <corners android:radius="3dp" />
+            <stroke android:width="5px" android:color="#000000" />
+        </shape>
+    </item>
+</layer-list>
